@@ -17,7 +17,7 @@ async def test_health():
 
 async def test_send_message(channel_id, message):
     async with aiohttp.ClientSession() as session:
-        url = urljoin(WS_CONNECT_DOMAIN, f'channels/send/{channel_id}')
+        url = urljoin(WS_CONNECT_DOMAIN, f'channel/send/{channel_id}')
         response = await session.post(url, json=message)
         content = await response.json()
         print('test_send_message', response.status, content)
@@ -25,7 +25,7 @@ async def test_send_message(channel_id, message):
 
 async def test_send_broadcast(message):
     async with aiohttp.ClientSession() as session:
-        url = urljoin(WS_CONNECT_DOMAIN, 'channels/send')
+        url = urljoin(WS_CONNECT_DOMAIN, 'channel/send')
         response = await session.post(url, json=message)
         content = await response.json()
         print('test_send_broadcast', response.status, content)

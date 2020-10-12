@@ -1,9 +1,9 @@
-from fastapi.routing import APIRouter
+from fastapi.routing import APIRouter, APIWebSocketRoute
 from fastapi.responses import JSONResponse
 from fastapi.websockets import WebSocket
 from pydantic import BaseModel
 
-from app.services.channels import ChannelManager
+from app.services.channel import ChannelManager
 
 
 router = APIRouter(default_response_class=JSONResponse)
@@ -34,3 +34,5 @@ async def send_message(channel_id: str, message: Message):
 @router.websocket('/ws/{channel_id}')
 async def websocket_endpoint(websocket: WebSocket, channel_id: str):
     await manager.connect(channel_id, websocket)
+
+

@@ -27,7 +27,6 @@ class ChannelManager(metaclass=SingletonMeta):
 
     async def connect(self, channel_id: str, websocket: WebSocket) -> None:
         await websocket.accept()
-
         self.connections[channel_id].append(websocket)
 
         # keep websocket alive
