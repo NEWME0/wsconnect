@@ -8,11 +8,11 @@ router = APIRouter(default_response_class=JSONResponse)
 manager = ChannelManager()
 
 
-@router.get('/channel')
+@router.get('/active_connections/')
 async def channel_list():
     result = {}
 
-    for channel_id, connections in manager.connections.items():
+    for channel_id, connections in manager.channels.items():
         result[channel_id] = len(connections)
 
     return JSONResponse(result)

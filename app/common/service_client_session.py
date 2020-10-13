@@ -18,6 +18,9 @@ class ServiceClientSession(ClientSession, ABC):
     def request(self, method, path, **kwargs):
         return super(ServiceClientSession, self).request(method, self._make_url(path), **kwargs)
 
+    def ws_connect(self, path, **kwargs):
+        return super(ServiceClientSession, self).ws_connect(self._make_url(path), **kwargs)
+
     def get(self, path, **kwargs):
         return super(ServiceClientSession, self).get(self._make_url(path), **kwargs)
 

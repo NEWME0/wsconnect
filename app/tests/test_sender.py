@@ -1,54 +1,38 @@
-from urllib.parse import urljoin
-
 import asyncio
-import aiohttp
 
-
-WS_CONNECT_DOMAIN = 'http://127.0.0.1:8000/'
-
-
-async def test_health():
-    async with aiohttp.ClientSession() as session:
-        url = urljoin(WS_CONNECT_DOMAIN, 'health')
-        response = await session.get(url)
-        content = await response.json()
-        print('test_health', response.status, content)
-
-
-async def test_send_message(channel_id, message):
-    async with aiohttp.ClientSession() as session:
-        url = urljoin(WS_CONNECT_DOMAIN, f'channel/send/{channel_id}')
-        response = await session.post(url, json=message)
-        content = await response.json()
-        print('test_send_message', response.status, content)
-
-
-async def test_send_broadcast(message):
-    async with aiohttp.ClientSession() as session:
-        url = urljoin(WS_CONNECT_DOMAIN, 'channel/send')
-        response = await session.post(url, json=message)
-        content = await response.json()
-        print('test_send_broadcast', response.status, content)
+from app.tests.common import TestClient
 
 
 async def main():
-    await test_health()
+    health = await TestClient.health()
+    print(health)
 
-    for i in range(5):
-        await test_send_message(channel_id='channel_001', message={'message': f'Channel message for "channel_001" {i}'})
-        await asyncio.sleep(1)
+    count = 3
+    delay = 0.5
 
-    for i in range(5):
-        await test_send_message(channel_id='channel_002', message={'message': f'Channel message for "channel_002" {i}'})
-        await asyncio.sleep(1)
+    channel_01 = 'chat_5f58e44af6d0d54fb92f9da0'
+    channel_02 = 'chat_5f58e44af6d0d54fb92f9da0'
+    channel_03 = 'chat_5f58e44af6d0d54fb92f9da0'
 
-    for i in range(5):
-        await test_send_message(channel_id='channel_003', message={'message': f'Channel message for "channel_003" {i}'})
-        await asyncio.sleep(1)
+    for i in range(count):
+        sent_report = await TestClient.send_message(channel=channel_01, message=f'Send message {i}')
+        print(sent_report)
+        await asyncio.sleep(delay)
 
-    for i in range(5):
-        await test_send_broadcast(message={'message': f'Broadcast message {i}'})
-        await asyncio.sleep(1)
+    for i in range(count):
+        sent_report = await TestClient.send_message(channel=channel_02, message=f'Send message {i}')
+        print(sent_report)
+        await asyncio.sleep(delay)
+
+    for i in range(count):
+        sent_report = await TestClient.send_message(channel=channel_03, message=f'Send message {i}')
+        print(sent_report)
+        await asyncio.sleep(delay)
+
+    for i in range(count):
+        sent_report = await TestClient.push_message(message=f'Push message {i}')
+        print(sent_report)
+        await asyncio.sleep(delay)
 
 
 if __name__ == '__main__':
