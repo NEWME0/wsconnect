@@ -29,8 +29,8 @@ class Channel:
         await websocket.close(code=1000)
 
     async def send(self, message: str) -> Tuple[int, int]:
-        tasks = [self._send(websocket, message) for websocket in self._connections]
-        result = await gather(*tasks)
+        send_message_coroutines = [self._send(websocket, message) for websocket in self._connections]
+        result = await gather(*send_message_coroutines)
         return result.count(True), result.count(False)
 
     async def _send(self, websocket: WebSocket, data: str):
@@ -51,20 +51,37 @@ class Channel:
 
 class ChannelManager(metaclass=SingletonMeta):
     def __init__(self):
+        """ Init ChannelManager """
         self._channels = defaultdict(Channel)
 
     @property
     def channels(self):
+        """ Channels getter """
         return self._channels
 
+    async def _destroy_channel_if_empty(self, channel_id):
+        """ Delete channel if it is empty """
+        if channel_id in self._channels:
+            if self._channels[channel_id].is_empty:
+                del self._channels[channel_id]
+
     async def connect(self, channel_id: str, websocket: WebSocket) -> None:
+        """ Connect websocket to channel """
         await self._channels[channel_id].connect(websocket, keep_alive=True)
+        await self._destroy_channel_if_empty(channel_id)
+
+    async def disconnect(self, channel_id: str, websocket: WebSocket) -> None:
+        """ Disconnect websocket from channel """
+        await self._channels[channel_id].disconnect(websocket)
+        await self._destroy_channel_if_empty(channel_id)
 
     async def send(self, channel_id: str, message: str) -> Tuple[int, int]:
+        """ Send message to channel """
         sent, fail = await self._channels[channel_id].send(message)
         return sent, fail
 
     async def push(self, message: str) -> Tuple[int, int]:
+        """ Send message to all channels """
         sent_total = 0
         fail_total = 0
 
