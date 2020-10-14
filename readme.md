@@ -1,60 +1,82 @@
 # wsconnect
 
 
-## Instalation
-
-```pip install -r requirements.txt```
-
-
-## Startup
+## Installation
 
 ```
-# Run app with custom settings
-uvicorn app:app --ws=websockets
+pip install -r requirements.txt
 ```
 
-Or
 
+## Run
+
+Run app with default settings
 ```
-# Run app with default settings
 python -m app
 ```
 
-
-## Documentation
-
+Or run app with custom settings
 ```
-GET /docs         - swagger
-GET /redoc        - redoc swagger
-GET /openapi.json - openapi
+uvicorn app:app --ws=websockets [<custom-settings>]
 ```
 
+> Note!<br>
+> By default `uvicorn` doesn't handle `WS|WSS` protocols used by websockets.<br>
+> We need to specify module that will be used for `WS|WSS` protocols with argument<br>
+> `--ws=websockets` where `websockets` is python module.
 
-## Sender API
 
+## API
+
+#### Documentation API
+
+Swagger
 ```
-POST /message/send/ - Send message to specificated channel
+GET /docs
+```
+
+Redoc
+```
+GET /redoc
+```
+
+OpenAPI json schema
+```
+GET /openapi.json
+```
+
+#### Sender API
+
+Send message to specific channel
+```
+POST /message/send/
 {
     "channel": "chat_{user_id}",
     "message": "..."
 }
+```
 
-
-POST /message/push/ - Send message to all channels
+Send message to all channels
+```
+POST /message/push/
 {
     "message": "..."
 }
-
 ```
 
-## Receiver API
+#### Receiver API
 
+Connect websocket
 ```
-WS/WSS /channel/websocket/ - Connect websocket
+WS /channel/websocket/
+{
+    "token": "<user-token>"
+}
 ```
 
-## Dashboard API
+#### Dashboard API
 
+List of channels with count of active connections
 ```
-GET /channel/dashboard/ - List of channels with count of active connections
+GET /channel/dashboard/
 ```
