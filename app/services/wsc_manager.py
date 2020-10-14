@@ -25,7 +25,7 @@ class Channel:
         """ Add websocket to channel """
         self._connections.append(websocket)
         if keep_alive:
-            await self._idle(websocket)
+            await self._listen_until_disconnected(websocket)
 
     async def disconnect(self, websocket: WebSocket) -> None:
         """ Delete websocket from channel and close it for client """
@@ -34,11 +34,11 @@ class Channel:
 
     async def send(self, message: str) -> Tuple[int, int]:
         """ Send message to all websockets in channel """
-        send_message_coroutines = [self._send(websocket, message) for websocket in self._connections]
-        result = await gather(*send_message_coroutines)
-        return result.count(True), result.count(False)
+        coroutines = [self._safe_send(websocket, message) for websocket in self._connections]
+        results = await gather(*coroutines)
+        return results.count(True), results.count(False)
 
-    async def _send(self, websocket: WebSocket, message: str):
+    async def _safe_send(self, websocket: WebSocket, message: str):
         """ Try to send message to websocket """
         try:
             await websocket.send_text(data=message)
@@ -47,8 +47,8 @@ class Channel:
             await self.disconnect(websocket)
             return False
 
-    async def _idle(self, websocket: WebSocket):
-        """ Keep connection alive until it is closed by client """
+    async def _listen_until_disconnected(self, websocket: WebSocket):
+        """ Listen socket until it is closed by client """
         try:
             while True:
                 await websocket.receive()
@@ -66,26 +66,15 @@ class ChannelManager(metaclass=SingletonMeta):
         """ Channels getter """
         return self._channels
 
-    async def _destroy_channel_if_empty(self, channel_id):
-        """ Delete channel if it is empty """
-        if channel_id in self._channels:
-            if self._channels[channel_id].is_empty:
-                del self._channels[channel_id]
-
-    async def _send_message_if_channel_exists(self, channel_id, message):
-        if channel_id in self._channels:
-            return await self._channels[channel_id].send(message)
-        return 0, 0
-
     async def connect(self, channel_id: str, websocket: WebSocket) -> None:
         """ Connect websocket to channel """
         await self._channels[channel_id].connect(websocket, keep_alive=True)
-        await self._destroy_channel_if_empty(channel_id)
+        await self._destroy_channel_if_is_empty(channel_id)
 
     async def disconnect(self, channel_id: str, websocket: WebSocket) -> None:
         """ Disconnect websocket from channel """
         await self._channels[channel_id].disconnect(websocket)
-        await self._destroy_channel_if_empty(channel_id)
+        await self._destroy_channel_if_is_empty(channel_id)
 
     async def send(self, channel_id: str, message: str) -> Tuple[int, int]:
         """ Send message to channel """
@@ -94,7 +83,19 @@ class ChannelManager(metaclass=SingletonMeta):
 
     async def push(self, message: str) -> Tuple[int, int]:
         """ Send message to all channels """
-        send_coroutines = [self._send_message_if_channel_exists(channel_id, message) for channel_id in self._channels]
-        sending_results = gather(*send_coroutines)
-        total_sent, total_fail = map(sum, zip(*sending_results))
+        coroutines = [self._send_message_if_channel_exists(channel_id, message) for channel_id in self._channels]
+        results = gather(*coroutines)
+        total_sent, total_fail = map(sum, zip(*results))
         return total_sent, total_fail
+
+    async def _destroy_channel_if_is_empty(self, channel_id):
+        """ Delete channel if it is empty """
+        if channel_id in self._channels:
+            if self._channels[channel_id].is_empty:
+                del self._channels[channel_id]
+
+    async def _send_message_if_channel_exists(self, channel_id, message):
+        if channel_id in self._channels:
+            return await self._channels[channel_id].send(message)
+        else:
+            return 0, 0
