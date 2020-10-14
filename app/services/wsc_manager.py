@@ -13,35 +13,42 @@ class Channel:
 
     @property
     def connections(self):
+        """ Channel connections getter """
         return self._connections
 
     @property
     def is_empty(self):
+        """ Check if channel has at least one active websocket """
         return len(self._connections) == 0
 
     async def connect(self, websocket: WebSocket, keep_alive: bool = True) -> None:
+        """ Add websocket to channel """
         self._connections.append(websocket)
         if keep_alive:
             await self._idle(websocket)
 
     async def disconnect(self, websocket: WebSocket) -> None:
+        """ Delete websocket from channel and close it for client """
         self._connections.remove(websocket)
         await websocket.close(code=1000)
 
     async def send(self, message: str) -> Tuple[int, int]:
+        """ Send message to all websockets in channel """
         send_message_coroutines = [self._send(websocket, message) for websocket in self._connections]
         result = await gather(*send_message_coroutines)
         return result.count(True), result.count(False)
 
-    async def _send(self, websocket: WebSocket, data: str):
+    async def _send(self, websocket: WebSocket, message: str):
+        """ Try to send message to websocket """
         try:
-            await websocket.send_text(data=data)
+            await websocket.send_text(data=message)
             return True
         except WebSocketDisconnect:
             await self.disconnect(websocket)
             return False
 
     async def _idle(self, websocket: WebSocket):
+        """ Keep connection alive until it is closed by client """
         try:
             while True:
                 await websocket.receive()
