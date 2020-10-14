@@ -1,5 +1,6 @@
 import asyncio
 
+from app import config
 from app.services.sso_client import SSOClientSession
 from app.tests.test_client import TestClient
 
@@ -20,24 +21,28 @@ TEST_ACCOUNTS = [
 ]
 
 
+async def get_access_token(username: str, password: str):
+    tokens = await SSOClientSession.sso_login(
+        username=username,
+        password=password,
+        service_token=config.SSO_SERVICE_TOKEN
+    )
+
+    if tokens:
+        return tokens.get('access')
+
+
 async def main():
     websocket_tasks = []
 
-    # Log in test users
+    # Test users
     for credentials in TEST_ACCOUNTS:
-        tokens = await SSOClientSession.sso_login(username=credentials.get('username'),
-                                                  password=credentials.get('password'))
-        if not tokens:
-            continue
+        access_token = await get_access_token(**credentials)
+        channel_websocket = TestClient.channel_websocket(access_token, config.SSO_SERVICE_TOKEN)
+        websocket_tasks.append(channel_websocket)
 
-        access = tokens.get('access')
-        if not access:
-            continue
-
-        websocket_tasks.append(TestClient.channel_websocket(access))
-
-    # Log in fake user
-    websocket_tasks.append(TestClient.channel_websocket('fake-token'))
+    # Fake users
+    websocket_tasks.append(TestClient.channel_websocket('fake-token', config.SSO_SERVICE_TOKEN))
 
     # Connect websockets
     await asyncio.gather(*websocket_tasks)

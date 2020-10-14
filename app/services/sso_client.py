@@ -8,15 +8,16 @@ class SSOClientSession(ServiceClientSession):
     _base_url = config.SSO_DOMAIN
 
     @classmethod
-    async def sso_auth(cls, token: str) -> Optional[dict]:
+    async def sso_auth(cls, token: str, service_token: str) -> Optional[dict]:
         """
         SSO user data with token
         :param token:
+        :param service_token
         :return: {<user-data>}
         """
         path = 'authorization/token/service/verify/'
         data = {
-            'service_token': config.SSO_SERVICE_TOKEN,
+            'service_token': service_token,
             'token': token
         }
         async with cls(raise_for_status=False) as session:
@@ -25,16 +26,17 @@ class SSOClientSession(ServiceClientSession):
                 return await response.json()
 
     @classmethod
-    async def sso_login(cls, username: str, password: str) -> Optional[dict]:
+    async def sso_login(cls, username: str, password: str, service_token: str) -> Optional[dict]:
         """
         SSO user login
         :param username:
         :param password:
+        :param service_token
         :return: {'refresh': '<refresh-token>', 'access': '<access-token>'}
         """
         path = 'authorization/token/'
         data = {
-            'service_token': config.SSO_SERVICE_TOKEN,
+            'service_token': service_token,
             "username": username,
             "password": password
         }

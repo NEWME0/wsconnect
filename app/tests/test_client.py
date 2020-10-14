@@ -21,9 +21,10 @@ class TestClient(ServiceClientSession):
         raise NotImplementedError()
 
     @classmethod
-    async def channel_websocket(cls, token):
+    async def channel_websocket(cls, token, service_token):
         headers = {
-            'token': token
+            'token': token,
+            'service_token': service_token
         }
 
         async with cls(headers=headers) as session:

@@ -1,21 +1,22 @@
-from typing import Optional
-
 from fastapi.websockets import WebSocket
 
 from app.services.sso_client import SSOClientSession
 
 
-async def sso_websocket_auth(websocket: WebSocket) -> Optional[dict]:
-    token = websocket.headers.get('token')
-    if not token:
-        return
+class SSOWebSocketAuth:
+    """
+        Get user data from SSO with token and service_token.
+        Should be used as Depends in Endpoint
+    """
 
-    user = await SSOClientSession.sso_auth(token)
-    if not user:
-        return
+    async def __call__(self, websocket: WebSocket):
+        user_token = websocket.headers.get('token')
+        service_token = websocket.headers.get('service_token')
+        if not user_token or not service_token:
+            return None
 
-    user_id = user.get('id')
-    if not user_id:
-        return
+        user_data = await SSOClientSession.sso_auth(token=user_token, service_token=service_token)
+        if not user_data:
+            return None
 
-    return user_id
+        return user_data

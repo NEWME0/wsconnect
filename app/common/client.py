@@ -6,28 +6,33 @@ from aiohttp import ClientSession
 class ServiceClientSession(ClientSession, ABC):
     """
         ClientSession with predefined base_url
-        Usage:
-            class ExampleClientSession(ServiceClientSession):
-                _base_url = 'https://example.ebs'
 
-            async with ExampleClientSession() as session:
-                response = await session.get('/home')
-                response = await session.post('/login', json={'username': 'admin', 'password': 'admin'})
+        Usage:
+        class ExampleClientSession(ServiceClientSession):
+            _base_url = 'https://example.ebs'
+
+        async with ExampleClientSession() as session:
+            response = await session.get('/home')
+            response = await session.post('/login', json={'username': 'admin', 'password': 'admin'})
+
+        async with ExampleClientSession(headers={...}, cookies={...}) as session:
+            response = await session.request('patch', data={...}, headers={...})
     """
 
     _base_url = None
 
     def __init__(self, *args, **kwargs):
+        """ Check that base_url has value and init ClientSession """
         assert self._base_url, ValueError('_base_url should specify _base_url')
         super(ServiceClientSession, self).__init__(*args, **kwargs)
 
     @property
     def base_url(self):
-        """ base_url getter """
+        """ Get base_url """
         return self._base_url
 
     def make_url(self, path):
-        """ join base_url and path """
+        """ Join base_url and path """
         return urljoin(self._base_url, path)
 
     def request(self, method, path, **kwargs):
