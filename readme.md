@@ -21,6 +21,15 @@ python -m app
 ```
 
 
+## Documentation
+
+```
+GET /docs         - swagger
+GET /redoc        - redoc swagger
+GET /openapi.json - openapi
+```
+
+
 ## Sender API
 
 ```
