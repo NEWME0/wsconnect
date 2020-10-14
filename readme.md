@@ -47,5 +47,5 @@ WS/WSS /channel/websocket/ - Connect websocket
 ## Dashboard API
 
 ```
-GET /channel/dashboard/ - NotImplemented
+GET /channel/dashboard/ - List of channels with count of active connections
 ```
