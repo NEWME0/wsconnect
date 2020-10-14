@@ -72,6 +72,11 @@ class ChannelManager(metaclass=SingletonMeta):
             if self._channels[channel_id].is_empty:
                 del self._channels[channel_id]
 
+    async def _send_message_if_channel_exists(self, channel_id, message):
+        if channel_id in self._channels:
+            return await self._channels[channel_id].send(message)
+        return 0, 0
+
     async def connect(self, channel_id: str, websocket: WebSocket) -> None:
         """ Connect websocket to channel """
         await self._channels[channel_id].connect(websocket, keep_alive=True)
@@ -84,17 +89,12 @@ class ChannelManager(metaclass=SingletonMeta):
 
     async def send(self, channel_id: str, message: str) -> Tuple[int, int]:
         """ Send message to channel """
-        sent, fail = await self._channels[channel_id].send(message)
+        sent, fail = await self._send_message_if_channel_exists(channel_id, message)
         return sent, fail
 
     async def push(self, message: str) -> Tuple[int, int]:
         """ Send message to all channels """
-        sent_total = 0
-        fail_total = 0
-
-        for channel in self._channels.values():
-            sent, fail = await channel.send(message)
-            sent_total += sent
-            fail_total += fail
-
-        return sent_total, fail_total
+        send_coroutines = [self._send_message_if_channel_exists(channel_id, message) for channel_id in self._channels]
+        sending_results = gather(*send_coroutines)
+        total_sent, total_fail = map(sum, zip(*sending_results))
+        return total_sent, total_fail
