@@ -70,7 +70,8 @@ Connect websocket
 ```
 WS /channel/websocket/
 {
-    "token": "<user-token>"
+    "token": "<access-token>",
+    "service_token": "<service-token>"
 }
 ```
 
