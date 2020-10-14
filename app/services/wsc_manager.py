@@ -16,6 +16,10 @@ class Channel:
     def connections(self):
         return self._connections
 
+    @property
+    def is_empty(self):
+        return len(self._connections) == 0
+
     async def connect(self, websocket: WebSocket, keep_alive: bool = True) -> None:
         self._connections.append(websocket)
         if keep_alive:

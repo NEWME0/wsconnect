@@ -1,11 +1,11 @@
 import asyncio
 
-from app.services.sso_client import SSOClient
+from app.services.sso_client import SSOClientSession
 from app.config import TEST_TOKEN
 
 
 async def main():
-    user = await SSOClient.ws_sso_auth(TEST_TOKEN)
+    user = await SSOClientSession.ws_sso_auth(TEST_TOKEN)
     if user:
         print(user.get('id'))
 

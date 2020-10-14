@@ -1,12 +1,12 @@
 import asyncio
 
-from app.services.sso_client import SSOClient
+from app.services.sso_client import SSOClientSession
 from app import config
 
 
 async def main():
     for credentials in config.TEST_ACCOUNTS:
-        tokens = await SSOClient.sso_login(**credentials)
+        tokens = await SSOClientSession.sso_login(**credentials)
         access = tokens.get('access')
         print(credentials, access)
 
