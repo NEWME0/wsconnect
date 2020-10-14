@@ -3,7 +3,6 @@ from asyncio import gather
 from collections import defaultdict
 
 from fastapi.websockets import WebSocket, WebSocketDisconnect
-from starlette.websockets import WebSocketState
 
 from app.common.singleton import SingletonMeta
 
@@ -44,7 +43,7 @@ class Channel:
 
     async def _idle(self, websocket: WebSocket):
         try:
-            while websocket.client_state != WebSocketState.DISCONNECTED:
+            while True:
                 await websocket.receive()
         except RuntimeError:
             await self.disconnect(websocket)

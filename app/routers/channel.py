@@ -13,7 +13,8 @@ manager = ChannelManager()
 
 @router.get('/dashboard/')
 async def channel_dashboard():
-    return JSONResponse(status_code=200, content={'message': 'NOT IMPLEMENTED'})
+    content = {channel_id: len(channel.connections) for channel_id, channel in manager.channels.items()}
+    return JSONResponse(status_code=200, content=content)
 
 
 @router.websocket('/websocket/')
