@@ -84,7 +84,7 @@ class ChannelManager(metaclass=SingletonMeta):
     async def push(self, message: str) -> Tuple[int, int]:
         """ Send message to all channels """
         coroutines = [self._send_message_if_channel_exists(channel_id, message) for channel_id in self._channels]
-        results = gather(*coroutines)
+        results = await gather(*coroutines)
         total_sent, total_fail = map(sum, zip(*results))
         return total_sent, total_fail
 

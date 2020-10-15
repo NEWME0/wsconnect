@@ -38,8 +38,9 @@ async def main():
     # Test users
     for credentials in TEST_ACCOUNTS:
         access_token = await get_access_token(**credentials)
-        channel_websocket = TestClient.channel_websocket(access_token, config.SSO_SERVICE_TOKEN)
-        websocket_tasks.append(channel_websocket)
+        for i in range(1000):
+            channel_websocket = TestClient.channel_websocket(access_token, config.SSO_SERVICE_TOKEN)
+            websocket_tasks.append(channel_websocket)
 
     # Fake users
     websocket_tasks.append(TestClient.channel_websocket('fake-token', config.SSO_SERVICE_TOKEN))

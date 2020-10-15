@@ -1,3 +1,4 @@
+from aiohttp.client_exceptions import *
 from fastapi.websockets import WebSocket
 
 from app.services.sso_client import SSOClientSession
@@ -15,7 +16,11 @@ class SSOWebSocketAuth:
         if not user_token or not service_token:
             return None
 
-        user_data = await SSOClientSession.sso_auth(token=user_token, service_token=service_token)
+        try:
+            user_data = await SSOClientSession.sso_auth(token=user_token, service_token=service_token)
+        except (ClientConnectorError,):
+            return None
+
         if not user_data:
             return None
 
