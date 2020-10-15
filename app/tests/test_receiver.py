@@ -38,7 +38,7 @@ async def main():
     # Test users
     for credentials in TEST_ACCOUNTS:
         access_token = await get_access_token(**credentials)
-        for i in range(1000):
+        for i in range(3000):
             channel_websocket = TestClient.channel_websocket(access_token, config.SSO_SERVICE_TOKEN)
             websocket_tasks.append(channel_websocket)
 

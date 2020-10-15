@@ -7,16 +7,21 @@ async def main():
     health = await TestClient.health()
     print(health)
 
-    count = 3
+    count = 100
     delay = 0.5
 
     channel_01 = 'chat_5f61e0c8069f7e36bc6069d4'
     channel_02 = 'chat_5f61e0c8069f7e36bc6069d2'
     channel_03 = 'chat_5f61e3280a3d66896f132175'
 
-    for i in range(count):
-        sent_report = await TestClient.message_send(channel=channel_01, message=f'Send message {i}')
-        print(sent_report)
+    for i in range(10):
+        coroutines = [
+            TestClient.message_send(channel=channel_01, message=f'Send message {i}')
+            for i in range(count)
+        ]
+        results = await asyncio.gather(*coroutines)
+        results = [d.values() for d in results]
+        sent_report = zip(map(sum, *results))
         await asyncio.sleep(delay)
 
     for i in range(count):
