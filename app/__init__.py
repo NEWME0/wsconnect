@@ -16,5 +16,5 @@ app.include_router(prefix='/channel', router=channel.router)
 
 
 @app.get('/')
-def health():
+async def health():
     return JSONResponse(status_code=200, content={'health': True})
