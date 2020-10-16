@@ -1,4 +1,5 @@
 
+
 class SingletonMeta(type):
     """
         Meta class for singletons

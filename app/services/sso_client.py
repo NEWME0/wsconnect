@@ -4,9 +4,23 @@ from app import config
 from app.common.client import ServiceClientSession
 
 
+__all__ = ['SSOClientSession']
+
+
 class SSOClientSession(ServiceClientSession):
     _base_url: str = config.SSO_DOMAIN
     _base_session: 'SSOClientSession' = None
+
+    @classmethod
+    async def initialize_base_session(cls):
+        """ Initialize base session """
+        if not cls._base_session or cls._base_session.closed:
+            cls._base_session = cls()
+
+    @classmethod
+    async def finalize_base_session(cls):
+        """ Close base session """
+        await cls._base_session.close()
 
     @classmethod
     def base_session(cls):
